@@ -2,6 +2,7 @@ import 'package:bookify/core/Binding/auth_binding.dart';
 import 'package:bookify/core/constant/App_routes.dart';
 import 'package:bookify/view/screen/auth/Signup.dart';
 import 'package:bookify/view/screen/auth/login.dart';
+import 'package:bookify/view/screen/speech_to_text_page.dart';
 import 'package:bookify/view/screen/users/mainScreen.dart';
 import 'package:bookify/view/screen/users/all_events_screen.dart';
 import 'package:bookify/view/screen/users/event_details_screen.dart';
@@ -29,5 +30,8 @@ List<GetPage<dynamic>>? routes = [
   GetPage(name: AppRoute.myWishlist, page: () => const MyWishlistScreen()),
   GetPage(name: AppRoute.myReviews, page: () => const MyReviewsScreen()),
   GetPage(name: AppRoute.myUploads, page: () => const UploadsScreen()),
+
+
+  GetPage(name: AppRoute.speech, page: () =>  SpeechToTextPage()),
 
 ];

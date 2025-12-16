@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:bookify/core/constant/App_link.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 abstract class AudioPlayerController extends GetxController {
@@ -22,6 +23,10 @@ class AudioPlayerControllerImp extends AudioPlayerController {
   }
 
   void _initAudioPlayer() {
+    // Set global audio context for better compatibility
+    audioPlayer.setReleaseMode(ReleaseMode.stop);
+    audioPlayer.setPlayerMode(PlayerMode.mediaPlayer);
+
     audioPlayer.onPlayerStateChanged.listen((state) {
       isPlaying = state == PlayerState.playing;
       update();
@@ -57,10 +62,22 @@ class AudioPlayerControllerImp extends AudioPlayerController {
 
   @override
   Future<void> playPause() async {
-    if (isPlaying) {
-      await audioPlayer.pause();
-    } else {
-      await audioPlayer.play(UrlSource(audioUrl));
+    try {
+      if (isPlaying) {
+        await audioPlayer.pause();
+      } else {
+        print('Attempting to play audio from: $audioUrl');
+        await audioPlayer.play(UrlSource(audioUrl));
+      }
+    } catch (e) {
+      print('Error playing audio: $e');
+      Get.snackbar(
+        'خطأ',
+        'فشل تشغيل الملف الصوتي.\nالسبب المحتمل: صيغة OGG غير مدعومة.\nاستخدم MP3 أو M4A بدلاً منها.',
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 5),
+      );
     }
   }
 

@@ -1,6 +1,7 @@
 import 'package:bookify/controller/users/main_controller.dart';
 import 'package:bookify/view/screen/users/all_events_screen.dart';
 import 'package:bookify/view/screen/users/categories_screen.dart';
+import 'package:bookify/view/screen/users/home_screen.dart';
 import 'package:bookify/view/screen/users/my_library_screen.dart';
 import 'package:bookify/view/screen/users/profile_screen.dart';
 import 'package:flutter/material.dart';
@@ -14,13 +15,11 @@ class MainScreen extends StatelessWidget {
     final controller = Get.put(MainController());
 
     final List<Widget> screens = [
-      // const HomeScreen(),
-      const CategoriesScreen(),
+      const HomeScreen(),
       const CategoriesScreen(),
       const MyLibraryScreen(),
       const AllEventsScreen(),
       const ProfileScreen(),
-      // const ProfileScreen(),
     ];
 
     return GetBuilder<MainController>(

@@ -7,16 +7,15 @@ import 'package:bookify/core/services/SharedPreferences.dart';
 import 'package:bookify/model/review_model.dart';
 import 'package:bookify/view/screen/users/audio_player_screen.dart';
 import 'package:bookify/view/screen/users/pdf_viewer_screen.dart';
+import 'package:bookify/view/screen/users/video_player_screen.dart';
+import 'package:bookify/view/widget/speech_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ContentDetailsScreen extends StatefulWidget {
   final int contentId;
 
-  const ContentDetailsScreen({
-    super.key,
-    required this.contentId,
-  });
+  const ContentDetailsScreen({super.key, required this.contentId});
 
   @override
   State<ContentDetailsScreen> createState() => _ContentDetailsScreenState();
@@ -59,13 +58,21 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
       return;
     }
 
-    Get.to(() => PdfViewerScreen(
-          pdfUrl: url,
-          title: title,
-        ));
+    Get.to(() => PdfViewerScreen(pdfUrl: url, title: title));
   }
 
-  void _openAudioPlayer(String? url, String title, String? coverUrl) {
+  // Helper method to check if file is video
+  bool _isVideoFile(String? url) {
+    if (url == null) return false;
+    final lowerUrl = url.toLowerCase();
+    return lowerUrl.endsWith('.mp4') ||
+        lowerUrl.endsWith('.avi') ||
+        lowerUrl.endsWith('.mov') ||
+        lowerUrl.endsWith('.mkv') ||
+        lowerUrl.endsWith('.webm');
+  }
+
+  void _openMediaPlayer(String? url, String title, String? coverUrl) {
     if (url == null || url.isEmpty) {
       Get.snackbar(
         'خطأ',
@@ -76,11 +83,25 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
       return;
     }
 
-    Get.to(() => AudioPlayerScreen(
+    // Check if it's a video file
+    if (_isVideoFile(url)) {
+      Get.to(
+        () => VideoPlayerScreen(
+          videoUrl: url,
+          title: title,
+          coverUrl: coverUrl,
+        ),
+      );
+    } else {
+      // Audio file
+      Get.to(
+        () => AudioPlayerScreen(
           audioUrl: url,
           title: title,
           coverUrl: coverUrl,
-        ));
+        ),
+      );
+    }
   }
 
   String _formatDuration(int? seconds) {
@@ -104,9 +125,7 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
         builder: (controller) {
           if (controller.staterequest == Staterequest.loading) {
             return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.teal,
-              ),
+              child: CircularProgressIndicator(color: Colors.teal),
             );
           }
 
@@ -116,11 +135,7 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.error_outline,
-                    color: Colors.red,
-                    size: 60,
-                  ),
+                  const Icon(Icons.error_outline, color: Colors.red, size: 60),
                   const SizedBox(height: 16),
                   const Text(
                     'فشل تحميل التفاصيل',
@@ -128,7 +143,8 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                   ),
                   const SizedBox(height: 8),
                   ElevatedButton(
-                    onPressed: () => controller.getContentById(widget.contentId),
+                    onPressed: () =>
+                        controller.getContentById(widget.contentId),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal,
                     ),
@@ -283,10 +299,7 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                               '${content.pagesCount} صفحة',
                             ),
                           if (content.language != null)
-                            _buildInfoChip(
-                              Icons.language,
-                              content.language!,
-                            ),
+                            _buildInfoChip(Icons.language, content.language!),
                           if (content.durationSeconds != null)
                             _buildInfoChip(
                               Icons.timer_outlined,
@@ -352,11 +365,18 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                       ],
                       if (content.audioUrl != null) ...[
                         _buildActionButton(
-                          icon: Icons.play_circle_filled,
-                          label: 'تشغيل الصوت',
+                          icon: _isVideoFile(content.audioUrl)
+                              ? Icons.play_circle_filled
+                              : Icons.headphones,
+                          label: _isVideoFile(content.audioUrl)
+                              ? 'تشغيل الفيديو'
+                              : 'تشغيل الصوت',
                           color: Colors.orange,
-                          onTap: () => _openAudioPlayer(
-                              content.audioUrl, content.title, content.coverUrl),
+                          onTap: () => _openMediaPlayer(
+                            content.audioUrl,
+                            content.title,
+                            content.coverUrl,
+                          ),
                         ),
                       ],
                       const SizedBox(height: 12),
@@ -365,7 +385,9 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                         label: 'إضافة إلى مكتبتي',
                         color: Colors.teal,
                         onTap: () {
-                          final libraryController = Get.put(LibraryControllerImp());
+                          final libraryController = Get.put(
+                            LibraryControllerImp(),
+                          );
                           libraryController.addToLibrary(content.contentId);
                         },
                       ),
@@ -375,7 +397,9 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                         label: 'إضافة لقائمة الأمنيات',
                         color: Colors.pink,
                         onTap: () {
-                          final wishlistController = Get.put(WishlistControllerImp());
+                          final wishlistController = Get.put(
+                            WishlistControllerImp(),
+                          );
                           wishlistController.addToWishlist(content.contentId);
                         },
                       ),
@@ -432,10 +456,7 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                 const Expanded(
                   child: Text(
                     'التقييمات والمراجعات',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
                 if (reviews.isNotEmpty)
@@ -451,11 +472,7 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.star,
-                          color: Colors.amber,
-                          size: 18,
-                        ),
+                        const Icon(Icons.star, color: Colors.amber, size: 18),
                         const SizedBox(width: 4),
                         Text(
                           _calculateAverageRating(reviews).toStringAsFixed(1),
@@ -488,7 +505,10 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.amber.shade700,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 14,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -497,10 +517,7 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                   icon: const Icon(Icons.rate_review, size: 20),
                   label: const Text(
                     'إضافة تقييم ومراجعة',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -530,7 +547,9 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'تقييمك: ${userReview.getRatingStars()}',
+                            userReview.rating > 0
+                                ? 'تقييمك: ${userReview.getRatingStars()}'
+                                : 'مراجعتك',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
@@ -651,14 +670,10 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isUserReview
-              ? Colors.amber.shade50
-              : Colors.white,
+          color: isUserReview ? Colors.amber.shade50 : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isUserReview
-                ? Colors.amber.shade200
-                : Colors.grey.shade200,
+            color: isUserReview ? Colors.amber.shade200 : Colors.grey.shade200,
           ),
           boxShadow: [
             BoxShadow(
@@ -746,34 +761,37 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Color(review.getRatingColor()).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.star,
-                        size: 16,
-                        color: Color(review.getRatingColor()),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${review.rating}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                if (review.rating > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Color(
+                        review.getRatingColor(),
+                      ).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.star,
+                          size: 16,
                           color: Color(review.getRatingColor()),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        Text(
+                          '${review.rating}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Color(review.getRatingColor()),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
             if (review.reviewText != null && review.reviewText!.isNotEmpty) ...[
@@ -791,11 +809,7 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(
-                    Icons.touch_app,
-                    size: 14,
-                    color: Colors.grey.shade600,
-                  ),
+                  Icon(Icons.touch_app, size: 14, color: Colors.grey.shade600),
                   const SizedBox(width: 4),
                   Text(
                     'اضغط للتعديل أو الحذف',
@@ -827,16 +841,14 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey.shade200),
-                ),
+                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'جميع التقييمات',
-                    style: TextStyle(
+                  Text(
+                    'جميع التقييمات (${reviews.length})',
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -866,8 +878,14 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
 
   double _calculateAverageRating(List<ReviewModel> reviews) {
     if (reviews.isEmpty) return 0.0;
-    final sum = reviews.fold<int>(0, (prev, review) => prev + review.rating);
-    return sum / reviews.length;
+    // Count only reviews with rating > 0 for average
+    final validReviews = reviews.where((review) => review.rating > 0).toList();
+    if (validReviews.isEmpty) return 0.0;
+    final sum = validReviews.fold<int>(
+      0,
+      (prev, review) => prev + review.rating,
+    );
+    return sum / validReviews.length;
   }
 
   void _showReviewDialog(int contentId, {ReviewModel? existingReview}) {
@@ -879,9 +897,7 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
 
     Get.dialog(
       Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: StatefulBuilder(
           builder: (context, setState) {
             return Container(
@@ -895,7 +911,9 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          existingReview == null ? 'إضافة تقييم' : 'تعديل التقييم',
+                          existingReview == null
+                              ? 'إضافة تقييم'
+                              : 'تعديل التقييم',
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -909,34 +927,37 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                     ),
                     const SizedBox(height: 24),
                     const Text(
-                      'التقييم',
+                      'التقييم (اختياري)',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(5, (index) {
-                        final rating = index + 1;
-                        return IconButton(
-                          onPressed: () {
-                            setState(() {
-                              selectedRating = rating;
-                            });
-                          },
-                          icon: Icon(
-                            selectedRating >= rating
-                                ? Icons.star
-                                : Icons.star_border,
-                            size: 40,
-                            color: selectedRating >= rating
-                                ? Colors.amber
-                                : Colors.grey,
-                          ),
-                        );
-                      }),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(5, (index) {
+                          final rating = index + 1;
+                          return IconButton(
+                            onPressed: () {
+                              setState(() {
+                                selectedRating = rating;
+                              });
+                            },
+                            icon: Icon(
+                              selectedRating >= rating
+                                  ? Icons.star
+                                  : Icons.star_border,
+                              size: 40,
+                              color: selectedRating >= rating
+                                  ? Colors.amber
+                                  : Colors.grey,
+                            ),
+                          );
+                        }),
+                      ),
                     ),
                     if (selectedRating > 0) ...[
                       const SizedBox(height: 8),
@@ -952,31 +973,40 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                       ),
                     ],
                     const SizedBox(height: 24),
-                    const Text(
-                      'المراجعة (اختياري)',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
+                    // const Text(
+                    //   'المراجعة (اختياري)',
+                    //   style: TextStyle(
+                    //     fontSize: 16,
+                    //     fontWeight: FontWeight.bold,
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 12),
+
+                    // TextField(
+                    //   controller: reviewTextController,
+                    //   maxLines: 4,
+                    //   decoration: InputDecoration(
+                    //     hintText: 'شارك رأيك حول هذا المحتوى...',
+                    //     border: OutlineInputBorder(
+                    //       borderRadius: BorderRadius.circular(12),
+                    //     ),
+                    //     focusedBorder: OutlineInputBorder(
+                    //       borderRadius: BorderRadius.circular(12),
+                    //       borderSide: const BorderSide(
+                    //         color: Colors.teal,
+                    //         width: 2,
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                    SpeechTextField(
                       controller: reviewTextController,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        hintText: 'شارك رأيك حول هذا المحتوى...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Colors.teal,
-                            width: 2,
-                          ),
-                        ),
-                      ),
+                      label: 'المراجعة (اختياري)',
+
+                      hint: 'شارك رأيك حول هذا المحتوى... ',
+                      maxLines: 3,
                     ),
+
                     const SizedBox(height: 24),
                     Row(
                       children: [
@@ -994,8 +1024,9 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -1015,33 +1046,31 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                         Expanded(
                           flex: 2,
                           child: ElevatedButton(
-                            onPressed: selectedRating == 0
-                                ? null
-                                : () async {
-                                    Get.back();
-                                    bool success;
-                                    if (existingReview == null) {
-                                      success = await reviewsController.createReview(
-                                        contentId,
-                                        selectedRating,
-                                        reviewTextController.text.isEmpty
-                                            ? null
-                                            : reviewTextController.text,
-                                      );
-                                    } else {
-                                      success = await reviewsController.updateReview(
-                                        existingReview.reviewId,
-                                        selectedRating,
-                                        reviewTextController.text.isEmpty
-                                            ? null
-                                            : reviewTextController.text,
-                                      );
-                                    }
-                                    if (success) {
-                                      _refreshReviews();
-                                      controller.getContentById(contentId);
-                                    }
-                                  },
+                            onPressed: () async {
+                              Get.back();
+                              bool success;
+                              if (existingReview == null) {
+                                success = await reviewsController.createReview(
+                                  contentId,
+                                  selectedRating > 0 ? selectedRating : null,
+                                  reviewTextController.text.isEmpty
+                                      ? null
+                                      : reviewTextController.text,
+                                );
+                              } else {
+                                success = await reviewsController.updateReview(
+                                  existingReview.reviewId,
+                                  selectedRating > 0 ? selectedRating : null,
+                                  reviewTextController.text.isEmpty
+                                      ? null
+                                      : reviewTextController.text,
+                                );
+                              }
+                              if (success) {
+                                _refreshReviews();
+                                controller.getContentById(contentId);
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.teal,
                               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1050,7 +1079,9 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
                               ),
                             ),
                             child: Text(
-                              existingReview == null ? 'إضافة التقييم' : 'تحديث التقييم',
+                              existingReview == null
+                                  ? 'إضافة التقييم'
+                                  : 'تحديث التقييم',
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -1110,10 +1141,7 @@ class _ContentDetailsScreenState extends State<ContentDetailsScreen> {
           const SizedBox(width: 6),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade700,
-            ),
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
           ),
         ],
       ),

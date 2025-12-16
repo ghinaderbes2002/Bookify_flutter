@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:bookify/controller/users/uploads_controller.dart';
 import 'package:bookify/core/classes/staterequest.dart';
 import 'package:bookify/core/constant/App_link.dart';
+import 'package:bookify/view/widget/speech_text_field.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -420,64 +421,33 @@ class UploadsScreen extends StatelessWidget {
                       const SizedBox(height: 20),
 
                     // عنوان الملف
-                    TextField(
-                      controller: titleController,
-                      decoration: InputDecoration(
-                        labelText: 'عنوان الملف *',
-                        hintText: 'أدخل عنوان الكتاب أو المحتوى',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Colors.teal,
-                            width: 2,
-                          ),
-                        ),
+                    SpeechTextField(
+                        controller: titleController,
+                        label: 'عنوان الملف',
+                        hint: 'أدخل عنوان الكتاب أو المحتوى',
+                        requiredField: true,
                       ),
-                    ),
+
                     const SizedBox(height: 16),
 
                     // اسم المؤلف
-                    TextField(
-                      controller: authorController,
-                      decoration: InputDecoration(
-                        labelText: 'اسم المؤلف *',
-                        hintText: 'أدخل اسم المؤلف',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Colors.teal,
-                            width: 2,
-                          ),
-                        ),
+                SpeechTextField(
+                        controller: authorController,
+                        label: 'اسم المؤلف',
+                        hint: 'أدخل اسم المؤلف',
+                        requiredField: true,
                       ),
-                    ),
+
                     const SizedBox(height: 16),
 
                     // الوصف
-                    TextField(
-                      controller: descriptionController,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        labelText: 'الوصف (اختياري)',
-                        hintText: 'أدخل وصفاً مختصراً عن المحتوى',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Colors.teal,
-                            width: 2,
-                          ),
-                        ),
+                SpeechTextField(
+                        controller: descriptionController,
+                        label: 'الوصف',
+                        hint: 'أدخل وصفاً مختصراً عن المحتوى',
+                        maxLines: 3,
                       ),
-                    ),
+
                     const SizedBox(height: 24),
 
                     // زر الرفع

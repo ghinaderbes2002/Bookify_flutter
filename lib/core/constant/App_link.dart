@@ -8,7 +8,8 @@ class ServerConfig {
 
   static const String _key = "server_link";
   String _serverLink =
-      "http://10.100.164.196:3000";
+      "http://192.168.0.8:3000";
+      // "http://10.100.164.196:3000";
 
   String get serverLink => _serverLink;
 

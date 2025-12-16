@@ -2,19 +2,7 @@ class AppRoute {
   static const String login = "/Login";
   static const String signup = "/signup";
   static const String mainScreen = "/mainScreen";
-  static const String transactionScreen = "/TransactionScreen";
-  static const String dailyFingerprint = "/DailyFingerprintPage";
-
-  static const String profile = "/profile";
-  static const String basket = "/basket";
-
-  static const String location = "/location";
-  static const String address = "/address";
-
-  static const String search = "/search";
-
-  static const String onBoarding = "/onboarding";
-
+  
   // Events Routes
   static const String allEvents = "/all-events";
   static const String eventDetails = "/event-details";
@@ -26,4 +14,6 @@ class AppRoute {
   static const String myReviews = "/my-reviews";
   static const String myWishlist = "/my-wishlist";
   static const String myUploads = "/my-uploads";
+
+  static const String speech = "/my-uploads";
 }

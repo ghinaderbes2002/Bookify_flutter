@@ -245,7 +245,7 @@ class ReviewsControllerImp extends ReviewsController {
   }
 
   @override
-  createReview(int contentId, int rating, String? reviewText) async {
+  createReview(int contentId, int?  rating, String? reviewText) async {
     staterequest = Staterequest.loading;
     update();
 
@@ -313,7 +313,7 @@ class ReviewsControllerImp extends ReviewsController {
   }
 
   @override
-  updateReview(int reviewId, int rating, String? reviewText) async {
+  updateReview(int reviewId, int?  rating, String? reviewText) async {
     staterequest = Staterequest.loading;
     update();
 
